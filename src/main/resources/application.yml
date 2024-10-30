@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: shop
+  config:
+    import: optional:configserver:http://localhost:9000
+#    configserver랑 연결
+  elasticsearch:
+    uris: http://localhost:9200
