@@ -45,7 +45,7 @@ public class BookDocument {
     private Long popularity;
 
     @Field(type = FieldType.Text)
-    private List<String> tags;  // 태그 리스트
+    private List<String> tags;
 
     @Field(type = FieldType.Integer)
     private Integer reviewCount;
