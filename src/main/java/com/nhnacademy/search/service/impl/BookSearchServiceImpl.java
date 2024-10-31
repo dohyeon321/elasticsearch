@@ -33,9 +33,9 @@ public class BookSearchServiceImpl implements BookSearchService {
                 .description(document.getDescription())
                 .author(document.getAuthorNames())
                 .publisher(document.getPublisherName())
-                .pubDate(document.getPubDate().toString())
-                .price(document.getCost())
-                .discountPrice(document.getDiscountCost())
+//                .pubDate(document.getPubDate().toString())
+//                .price(document.getCost())
+//                .discountPrice(document.getDiscountCost())
                 .popularity(document.getPopularity())
                 .build());
     }
