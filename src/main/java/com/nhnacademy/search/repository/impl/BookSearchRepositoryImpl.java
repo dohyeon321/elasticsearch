@@ -4,56 +4,52 @@ import com.nhnacademy.search.domain.SortCondition;
 import com.nhnacademy.search.domain.document.BookDocument;
 import com.nhnacademy.search.domain.SearchCondition;
 import com.nhnacademy.search.repository.BookSearchRepository;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
-import org.springframework.data.elasticsearch.core.query.Query;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.data.elasticsearch.core.SearchHits;
 
 @Repository
 public class BookSearchRepositoryImpl implements BookSearchRepository {
 
-    private final ElasticsearchRestTemplate elasticsearchTemplate;
+    private final ElasticsearchOperations elasticsearchOperations;
 
-    public BookSearchRepositoryImpl(ElasticsearchRestTemplate elasticsearchTemplate) {
-        this.elasticsearchTemplate = elasticsearchTemplate;
+    public BookSearchRepositoryImpl(ElasticsearchOperations elasticsearchOperations) {
+        this.elasticsearchOperations = elasticsearchOperations;
     }
 
     @Override
     public Page<BookDocument> search(Pageable pageable, String keyword, SearchCondition searchCondition, SortCondition sortCondition) {
-        var queryBuilder = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.matchQuery(searchCondition.name().toLowerCase(), keyword))
-                .withPageable(pageable);
+        // Criteria 생성 (검색 조건)
+        Criteria criteria = Criteria.where(searchCondition.name().toLowerCase()).contains(keyword);
+        CriteriaQuery query = new CriteriaQuery(criteria)
+                .setPageable(pageable)
+                .addSort(resolveSort(sortCondition));
 
-        // Sorting based on SortCondition enum
-        switch (sortCondition) {
-            case POPULARITY:
-                queryBuilder.withSort(SortBuilders.fieldSort("popularity").order(SortOrder.DESC));
-                break;
-            case NEWEST:
-                queryBuilder.withSort(SortBuilders.fieldSort("publishDate").order(SortOrder.DESC));
-                break;
-            case LOWEST_PRICE:
-                queryBuilder.withSort(SortBuilders.fieldSort("price").order(SortOrder.ASC));
-                break;
-            case HIGHEST_PRICE:
-                queryBuilder.withSort(SortBuilders.fieldSort("price").order(SortOrder.DESC));
-                break;
-            case RATING:
-                queryBuilder.withSort(SortBuilders.fieldSort("rating").order(SortOrder.DESC));
-                break;
-            case REVIEW_COUNT:
-                queryBuilder.withSort(SortBuilders.fieldSort("reviewCount").order(SortOrder.DESC));
-                break;
-        }
+        // ElasticsearchOperations로 검색 실행
+        SearchHits<BookDocument> searchHits = elasticsearchOperations.search(query, BookDocument.class);
 
-        Query query = queryBuilder.build();
-        SearchHits<BookDocument> searchHits = elasticsearchTemplate.search(query, BookDocument.class);
+        // Page 객체로 변환
+        return PageableExecutionUtils.getPage(
+                searchHits.map(org.springframework.data.elasticsearch.core.SearchHit::getContent).toList(),
+                pageable,
+                searchHits::getTotalHits);
+    }
 
-        return PageableExecutionUtils.getPage(searchHits.map(SearchHit::getContent).toList(), pageable, searchHits::getTotalHits);
+    private Sort resolveSort(SortCondition sortCondition) {
+        return switch (sortCondition) {
+            case POPULARITY -> Sort.by(Sort.Order.desc("popularity"));
+            case NEWEST -> Sort.by(Sort.Order.desc("publishDate"));
+            case LOWEST_PRICE -> Sort.by(Sort.Order.asc("price"));
+            case HIGHEST_PRICE -> Sort.by(Sort.Order.desc("price"));
+            case RATING -> Sort.by(Sort.Order.desc("rating"));
+            case REVIEW_COUNT -> Sort.by(Sort.Order.desc("reviewCount"));
+            default -> throw new IllegalArgumentException("Unknown sort condition: " + sortCondition);
+        };
     }
 }
