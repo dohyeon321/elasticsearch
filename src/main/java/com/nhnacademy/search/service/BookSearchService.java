@@ -8,3 +8,6 @@ import org.springframework.data.domain.Pageable;
 public interface BookSearchService {
     Page<BookSearchResponse> searchBooks(Pageable pageable, BookSearchRequest searchRequest);
 }
+
+
+
