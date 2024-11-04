@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class BookSearchServiceImpl implements BookSearchService {
@@ -31,12 +33,11 @@ public class BookSearchServiceImpl implements BookSearchService {
                 .id(document.getId())
                 .title(document.getTitle())
                 .description(document.getDescription())
-                .author(document.getAuthorNames())
-                .publisher(document.getPublisherName())
-//                .pubDate(document.getPubDate().toString())
-//                .price(document.getCost())
-//                .discountPrice(document.getDiscountCost())
-                .popularity(document.getPopularity())
+                .contributor(document.getContributors())
+                .publisherName(document.getPublisherName())
+                .pubDate(LocalDate.parse(document.getPubDate().toString()))
+                .price(document.getPrice())
+                .discountRate(document.getDiscountRate())
                 .build());
     }
 }

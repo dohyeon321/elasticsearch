@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -17,7 +16,7 @@ public class BookSearchResponse {
     private String description;
     private List<Contributor> contributor; //기여자
     private String publisherName; //출판사
-    private LocalDate publication;
+    private LocalDate pubDate;
     private BigDecimal price;
     private float discountRate;
     private int reviewCount;

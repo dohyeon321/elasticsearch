@@ -1,5 +1,6 @@
 package com.nhnacademy.search.domain.document;
 
+import com.nhnacademy.search.domain.Contributor;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -24,13 +25,13 @@ public class BookDocument {
     private String description;
 
     @Field(type = FieldType.Text)
-    private String authorNames;
+    private List<Contributor> contributors;
 
     @Field(type = FieldType.Keyword)
     private String isbn;
 
     @Field(type = FieldType.Date)
-    private LocalDate publication;
+    private LocalDate pubDate;
 
     @Field(type = FieldType.Keyword)
     private String publisherName;
@@ -38,8 +39,8 @@ public class BookDocument {
     @Field(type = FieldType.Double)
     private BigDecimal price;
 
-    @Field(type = FieldType.Double)
-    private BigDecimal discountPrice;
+    @Field(type = FieldType.Float)
+    private float discountRate;
 
     @Field(type = FieldType.Long)
     private Long popularity;
